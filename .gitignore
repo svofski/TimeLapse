@@ -1,0 +1,6 @@
+gen/*
+bin/*
+project.properties
+lint.xml
+proguard-project.txt
+.settings
