@@ -2,6 +2,8 @@ package com.lebedevsd.timelaps.vidgets;
 
 import java.io.IOException;
 
+import com.lebedevsd.timelaps.TimeLapsApplication;
+
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
@@ -14,9 +16,8 @@ public class CameraPreview extends SurfaceView implements
 	private SurfaceHolder mHolder;
 	private Camera mCamera;
 
-	public CameraPreview(Context context, Camera camera) {
+	public CameraPreview(Context context) {
 		super(context);
-		mCamera = camera;
 
 		// Install a SurfaceHolder.Callback so we get notified when the
 		// underlying surface is created and destroyed.
@@ -34,6 +35,7 @@ public class CameraPreview extends SurfaceView implements
 		// The Surface has been created, now tell the camera where to draw the
 		// preview.
 		try {
+			mCamera = TimeLapsApplication.getCameraInstance();
 			mCamera.setPreviewDisplay(holder);
 			mCamera.startPreview();
 		} catch (IOException e) {

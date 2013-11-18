@@ -1,29 +1,23 @@
 package com.lebedevsd.timelaps;
 
 import android.app.Application;
-import android.content.Context;
 import android.hardware.Camera;
-import android.media.CamcorderProfile;
-import android.media.MediaRecorder;
+import android.util.Log;
 
 public class TimeLapsApplication extends Application {
 
+	private static final String TAG = "TimeLapsApplication";
 	private static Camera mCamera;
-	private static boolean isRecording = false;
-
-	public static Context getContext() {
-		return getContext();
-	}
 
 	public static Camera getCameraInstance() {
 		if (mCamera == null) {
 			try {
-				mCamera = Camera.open(); // attempt to get a Camera instance
+				mCamera = Camera.open();
 			} catch (Exception e) {
-				// Camera is not available (in use or does not exist)
+				Log.d("TAG", e.getMessage());
 			}
 		}
-		return mCamera; // returns null if camera is unavailable
+		return mCamera;
 	}
 
 	public static void reliaseCamera() {
