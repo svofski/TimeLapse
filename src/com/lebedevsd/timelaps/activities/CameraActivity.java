@@ -78,16 +78,23 @@ public class CameraActivity extends FragmentActivity {
 
 	@Override
 	protected void onPause() {
-		releaseMediaRecorder();
-		isRecording = false;
+		super.onPause();
+		if (isRecording) {
+			mRecorder.stop();
+			releaseMediaRecorder();
+			mCamera.lock();
+			isRecording = false;
+			captureButton.setImageDrawable(getResources().getDrawable(
+					R.drawable.ic_color_effects));
+		} else 
+			releaseMediaRecorder();
+		TimeLapsApplication.reliaseCamera();
 		mCamera = null;
 		mRecorder = null;
-		super.onPause();
 	}
 
 	@Override
 	protected void onResume() {
-		
 		super.onResume();
 	}
 
