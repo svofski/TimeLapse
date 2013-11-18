@@ -1,18 +1,22 @@
 package com.lebedevsd.timelaps.activities;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import com.lebedevsd.timelaps.R;
 import com.lebedevsd.timelaps.TimeLapsApplication;
-import com.lebedevsd.timelaps.service.RecordingService;
 import com.lebedevsd.timelaps.vidgets.CameraPreview;
 import com.lebedevsd.timelaps.vidgets.OptionsFragment;
 
+import android.hardware.Camera;
+import android.media.CamcorderProfile;
+import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
+import android.os.Environment;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -27,33 +31,11 @@ public class CameraActivity extends FragmentActivity {
 	private static final String TAG = "CameraActivity";
 
 	private CameraPreview mPreview;
-
+	private Camera mCamera;
 	private ImageView captureButton;
 	private FrameLayout preview;
-	private boolean isRecording;
-	Messenger mService = null;
-
-	class IncomingHandler extends Handler {
-		@Override
-		public void handleMessage(Message msg) {
-			Log.d("Activity", "message recieved");
-			switch (msg.what) {
-			case RecordingService.MSG_REPLY_TO:
-				mService = msg.replyTo;
-				isRecording = (msg.arg1 == 1);
-				changeButtonState();
-				break;
-			case RecordingService.MSG_ERCORDING_STATE_CHANGED:
-				isRecording = (msg.arg1 == 1);
-				changeButtonState();
-				break;
-			default:
-				super.handleMessage(msg);
-			}
-		}
-	}
-
-	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	private MediaRecorder mRecorder;
+	private boolean isRecording = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,10 +43,6 @@ public class CameraActivity extends FragmentActivity {
 		if (!checkCameraHardware(getApplicationContext())) {
 			this.finish();
 		}
-		getApplicationContext().startService(
-				(new Intent(getApplicationContext(), RecordingService.class))
-						.putExtra("replyTo", mMessenger));
-
 		setContentView(R.layout.activity_camera_view);
 
 		// Create our Preview view and set it as the content of our activity.
@@ -82,40 +60,9 @@ public class CameraActivity extends FragmentActivity {
 		captureButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Message reply = new Message();
-				reply.what = RecordingService.MSG_RECORD;
-				try {
-					mService.send(reply);
-				} catch (RemoteException e) {
-				}
+				changeRecorderState();
 			}
 		});
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		Message reply = new Message();
-		reply.what = RecordingService.MSG_ACTIVITY_PAUSED;
-		try {
-			mService.send(reply);
-		} catch (RemoteException e) {
-		}
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-	}
-
-	private void changeButtonState() {
-		if (isRecording)
-			captureButton.setImageDrawable(getResources().getDrawable(
-					R.drawable.ic_flash));
-		else
-			captureButton.setImageDrawable(getResources().getDrawable(
-					R.drawable.ic_color_effects));
 	}
 
 	private boolean checkCameraHardware(Context context) {
@@ -130,7 +77,94 @@ public class CameraActivity extends FragmentActivity {
 	}
 
 	@Override
-	protected void onDestroy() {
-		super.onDestroy();
+	protected void onPause() {
+		releaseMediaRecorder();
+		isRecording = false;
+		mCamera = null;
+		mRecorder = null;
+		super.onPause();
 	}
+
+	@Override
+	protected void onResume() {
+		
+		super.onResume();
+	}
+
+	private void changeRecorderState() {
+		if (isRecording) {
+			mRecorder.stop();
+			releaseMediaRecorder();
+			mCamera.lock();
+			isRecording = false;
+			captureButton.setImageDrawable(getResources().getDrawable(
+					R.drawable.ic_color_effects));
+		} else {
+			if (prepareVideoRecorder()) {
+				mRecorder.start();
+				isRecording = true;
+				captureButton.setImageDrawable(getResources().getDrawable(
+						R.drawable.ic_flash));
+			} else {
+				releaseMediaRecorder();
+			}
+		}
+	}
+
+	private boolean prepareVideoRecorder() {
+
+		mRecorder = new MediaRecorder();
+		mCamera = TimeLapsApplication.getCameraInstance();
+
+		// Step 1: Unlock and set camera to MediaRecorder
+		mCamera.unlock();
+		mRecorder.setCamera(mCamera);
+
+		// Step 2: Set sources
+		mRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+		mRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+
+		// Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
+		mRecorder.setProfile(CamcorderProfile
+				.get(CamcorderProfile.QUALITY_HIGH));
+
+		// Step 4: Set output file
+		String filePath = Environment.getExternalStorageDirectory().getPath()
+				+ "/timelapsVideos";
+		String fileName = (new SimpleDateFormat("yyyyMMdd_HHmmss",
+				Locale.getDefault())).format(new Date())
+				+ ".mp4";
+		File timeLapsDirectory = new File(filePath + '/');
+		timeLapsDirectory.mkdirs();
+		mRecorder.setOutputFile(filePath + '/' + fileName);
+
+		// Step 5: Set the preview output
+		// mRecorder.setPreviewDisplay(mPreview.getHolder().getSurface());
+
+		// Step 6: Prepare configured MediaRecorder
+		try {
+			mRecorder.prepare();
+		} catch (IllegalStateException e) {
+			Log.d(TAG,
+					"IllegalStateException preparing MediaRecorder: "
+							+ e.getMessage());
+			releaseMediaRecorder();
+			return false;
+		} catch (IOException e) {
+			Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
+			releaseMediaRecorder();
+			return false;
+		}
+		return true;
+	}
+
+	private void releaseMediaRecorder() {
+		if (mRecorder != null) {
+			mRecorder.reset();
+			mRecorder.release();
+			mRecorder = null;
+			mCamera.lock();
+		}
+	}
+
 }
