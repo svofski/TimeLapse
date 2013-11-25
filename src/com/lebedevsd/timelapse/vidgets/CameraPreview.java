@@ -1,8 +1,8 @@
-package com.lebedevsd.timelaps.vidgets;
+package com.lebedevsd.timelapse.vidgets;
 
 import java.io.IOException;
 
-import com.lebedevsd.timelaps.TimeLapsApplication;
+import com.lebedevsd.timelapse.activities.CameraActivity;
 
 import android.content.Context;
 import android.hardware.Camera;
@@ -35,7 +35,7 @@ public class CameraPreview extends SurfaceView implements
 		// The Surface has been created, now tell the camera where to draw the
 		// preview.
 		try {
-			mCamera = TimeLapsApplication.getCameraInstance();
+			mCamera = CameraActivity.getCameraInstance();
 			mCamera.setPreviewDisplay(holder);
 			mCamera.startPreview();
 		} catch (IOException e) {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lebedevsd.timelaps"
+    package="com.lebedevsd.timelapse"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -18,13 +18,12 @@
     <uses-feature android:name="android.hardware.camera.setParameters" />
 
     <application
-        android:name="com.lebedevsd.timelaps.TimeLapsApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.lebedevsd.timelaps.activities.CameraActivity"
+            android:name="com.lebedevsd.timelapse.activities.CameraActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" >
@@ -35,7 +34,6 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.RecordingService" />
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.lebedevsd.timelaps.activities;
+package com.lebedevsd.timelapse.activities;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,10 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import com.lebedevsd.timelaps.R;
-import com.lebedevsd.timelaps.TimeLapsApplication;
-import com.lebedevsd.timelaps.vidgets.CameraPreview;
-import com.lebedevsd.timelaps.vidgets.OptionsFragment;
+import com.lebedevsd.timelapse.R;
+import com.lebedevsd.timelapse.vidgets.CameraPreview;
+import com.lebedevsd.timelapse.vidgets.OptionsFragment;
 
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
@@ -31,11 +30,12 @@ public class CameraActivity extends FragmentActivity {
 	private static final String TAG = "CameraActivity";
 
 	private CameraPreview mPreview;
-	private Camera mCamera;
+	private static Camera mCamera;
 	private ImageView captureButton;
 	private FrameLayout preview;
 	private MediaRecorder mRecorder;
 	private boolean isRecording = false;
+	private Fragment optionsFragment;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +52,7 @@ public class CameraActivity extends FragmentActivity {
 		mPreview.setKeepScreenOn(true);
 
 		// Create and add optionsFragment
-		Fragment optionsFragment = new OptionsFragment();
+		optionsFragment = new OptionsFragment();
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.add(R.id.optionsPlaseholder, optionsFragment).commit();
 
@@ -88,7 +88,7 @@ public class CameraActivity extends FragmentActivity {
 					R.drawable.ic_color_effects));
 		} else 
 			releaseMediaRecorder();
-		TimeLapsApplication.reliaseCamera();
+		reliaseCamera();
 		mCamera = null;
 		mRecorder = null;
 	}
@@ -99,7 +99,9 @@ public class CameraActivity extends FragmentActivity {
 	}
 
 	private void changeRecorderState() {
+		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		if (isRecording) {
+			ft.show(optionsFragment);
 			mRecorder.stop();
 			releaseMediaRecorder();
 			mCamera.lock();
@@ -107,6 +109,7 @@ public class CameraActivity extends FragmentActivity {
 			captureButton.setImageDrawable(getResources().getDrawable(
 					R.drawable.ic_color_effects));
 		} else {
+			ft.hide(optionsFragment);
 			if (prepareVideoRecorder()) {
 				mRecorder.start();
 				isRecording = true;
@@ -116,12 +119,13 @@ public class CameraActivity extends FragmentActivity {
 				releaseMediaRecorder();
 			}
 		}
+		ft.commit();
 	}
 
 	private boolean prepareVideoRecorder() {
 
 		mRecorder = new MediaRecorder();
-		mCamera = TimeLapsApplication.getCameraInstance();
+		mCamera = getCameraInstance();
 
 		// Step 1: Unlock and set camera to MediaRecorder
 		mCamera.unlock();
@@ -133,8 +137,10 @@ public class CameraActivity extends FragmentActivity {
 
 		// Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
 		mRecorder.setProfile(CamcorderProfile
-				.get(CamcorderProfile.QUALITY_HIGH));
-
+				.get(OptionsFragment.getQuality()));
+		
+		mRecorder.setCaptureRate(0.3);
+		
 		// Step 4: Set output file
 		String filePath = Environment.getExternalStorageDirectory().getPath()
 				+ "/timelapsVideos";
@@ -145,6 +151,7 @@ public class CameraActivity extends FragmentActivity {
 		timeLapsDirectory.mkdirs();
 		mRecorder.setOutputFile(filePath + '/' + fileName);
 
+		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
 		// Step 5: Set the preview output
 		// mRecorder.setPreviewDisplay(mPreview.getHolder().getSurface());
 
@@ -163,6 +170,24 @@ public class CameraActivity extends FragmentActivity {
 			return false;
 		}
 		return true;
+	}
+
+	public static Camera getCameraInstance() {
+		if (mCamera == null) {
+			try {
+				mCamera = Camera.open();
+			} catch (Exception e) {
+				Log.d("TAG", e.getMessage());
+			}
+		}
+		return mCamera;
+	}
+
+	public static void reliaseCamera() {
+		if (mCamera != null) {
+			mCamera.release();
+			mCamera = null;
+		}
 	}
 
 	private void releaseMediaRecorder() {

@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">TimeLaps</string>
+    <string name="app_name">TimeLapse</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+
+    <string-array name="time_lapse_quality">
+        <item>1080P quality</item>
+        <item>720P quality</item>
+        <item>480P quality</item>
+        <item>Highest quality</item>
+        <item>Lowest quality</item>
+    </string-array>
 
 </resources>
