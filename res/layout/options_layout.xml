@@ -19,7 +19,26 @@
                 android:id="@+id/flashIV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/flash_mode"
                 android:src="@drawable/ic_flash" />
+
+            <ImageView
+                android:id="@+id/fpsIV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_fps" />
+
+            <ImageView
+                android:id="@+id/durationIV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_duration" />
+
+            <ImageView
+                android:id="@+id/delayIV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_delay" />
 
             <ImageView
                 android:id="@+id/colorEffectsIV"
