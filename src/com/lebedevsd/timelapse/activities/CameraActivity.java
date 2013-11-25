@@ -132,7 +132,7 @@ public class CameraActivity extends FragmentActivity implements
 
 		// Step 4: Set output file
 		String filePath = Environment.getExternalStorageDirectory().getPath()
-				+ File.separator + R.string.lapse_folder;
+				+ File.separator + R.string.lapse_folder_name;
 		String fileName = (new SimpleDateFormat("yyyyMMdd_HHmmss",
 				Locale.getDefault())).format(new Date())
 				+ ".mp4";

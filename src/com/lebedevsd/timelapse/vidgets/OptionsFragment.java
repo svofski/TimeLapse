@@ -44,6 +44,7 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 	private ImageView mFPSImageView;
 	private ImageView mDurationImageView;
 	private ImageView mDelayImageView;
+	private ImageView mFolderImageView;
 	private static int mLapseQuality;
 	private static float mLapseFrameRate;
 	private static int mSelectedFrameRate;
@@ -107,6 +108,7 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 		mDurationImageView = (ImageView) mOptionsLayout
 				.findViewById(R.id.durationIV);
 		mDelayImageView = (ImageView) mOptionsLayout.findViewById(R.id.delayIV);
+		mFolderImageView = (ImageView) mOptionsLayout.findViewById(R.id.folderIV);
 
 		mCameraParams = CameraActivity.getCameraInstance().getParameters();
 
@@ -120,6 +122,7 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 		mFPSImageView.setOnClickListener(this);
 		mDurationImageView.setOnClickListener(this);
 		mDelayImageView.setOnClickListener(this);
+		mFolderImageView.setOnClickListener(this);
 	}
 
 	public static class ColorEffectsDialog extends DialogFragment {
@@ -581,17 +584,23 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 		case R.id.delayIV:
 			(new DelayDialog()).show(getChildFragmentManager(), getTag());
 			break;
+		case R.id.folderIV:
+			openGallery();
+			break;
 		default:
 			break;
 		}
 	}
 
-	public void buttonGallery(View v) {
+	private void openGallery() {
 		Intent intent = new Intent();
 		intent.setAction(Intent.ACTION_VIEW);
+		String PATH = Environment.getExternalStorageDirectory().getPath()
+				+ File.separator + R.string.lapse_folder_name;
+		File dir = new File(PATH);
+		dir.mkdirs();
 		intent.setDataAndType(
-				Uri.parse(Environment.getExternalStorageDirectory().getPath()
-						+ File.separator + R.string.lapse_folder), "video/*");
+				Uri.parse(PATH), "video/*");
 		startActivity(intent);
 	}
 }

@@ -3,8 +3,8 @@
 
     <string name="app_name">TimeLapse</string>
     <string name="action_settings">Settings</string>
-    <string name="lapse_folder">timeLapseVideos</string>
-    <string name="flash_mode">Flash mode</string>
+    <string name="lapse_folder_name">timeLapseVideos</string>
+    <string name="folder_button_title">Lapse folder</string>
     <string name="color_effects_dialog_title">Color effects</string>
     <string name="focus_mode_dialog_title">Focus mode</string>
     <string name="video_sizes_dialog_title">Output video quality</string>
