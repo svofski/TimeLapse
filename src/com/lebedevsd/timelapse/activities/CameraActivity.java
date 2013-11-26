@@ -14,9 +14,11 @@ import com.lebedevsd.timelapse.vidgets.OptionsFragment;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -132,12 +134,13 @@ public class CameraActivity extends FragmentActivity implements
 
 		// Step 4: Set output file
 		String filePath = Environment.getExternalStorageDirectory().getPath()
-				+ File.separator + R.string.lapse_folder_name;
-		String fileName = (new SimpleDateFormat("yyyyMMdd_HHmmss",
+				+ File.separator + getResources().getString(R.string.lapse_folder_name);
+		String fileName = "TimeLapse" + (new SimpleDateFormat("yyyyMMdd_HHmmss",
 				Locale.getDefault())).format(new Date())
 				+ ".mp4";
 		File timeLapsDirectory = new File(filePath + File.separator);
 		timeLapsDirectory.mkdirs();
+		galleryAddVideo(timeLapsDirectory);
 		mRecorder.setOutputFile(filePath + File.separator + fileName);
 
 		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
@@ -208,6 +211,13 @@ public class CameraActivity extends FragmentActivity implements
 		ft.commit();
 	}
 
+	private void galleryAddVideo(File f) {
+	    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+	    Uri contentUri = Uri.fromFile(f);
+	    mediaScanIntent.setData(contentUri);
+	    this.sendBroadcast(mediaScanIntent);
+	}
+	
 	@Override
 	public void startRecording() {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

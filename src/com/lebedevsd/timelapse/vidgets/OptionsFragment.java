@@ -12,6 +12,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
+import android.media.MediaScannerConnection;
+import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -27,11 +29,15 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class OptionsFragment extends Fragment implements OnClickListener {
+public class OptionsFragment extends Fragment implements OnClickListener,
+		MediaScannerConnectionClient {
 
 	private static Camera.Parameters mCameraParams;
-
+	private String SCAN_PATH;
+	private static final String FILE_TYPE = "video/*";
+	private MediaScannerConnection conn;
 	private FrameLayout mOptionsHolder;
 	private LinearLayout mOptionsLayout;
 
@@ -108,7 +114,8 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 		mDurationImageView = (ImageView) mOptionsLayout
 				.findViewById(R.id.durationIV);
 		mDelayImageView = (ImageView) mOptionsLayout.findViewById(R.id.delayIV);
-		mFolderImageView = (ImageView) mOptionsLayout.findViewById(R.id.folderIV);
+		mFolderImageView = (ImageView) mOptionsLayout
+				.findViewById(R.id.folderIV);
 
 		mCameraParams = CameraActivity.getCameraInstance().getParameters();
 
@@ -135,7 +142,9 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 					.size()]);
 			int indexOfActiveSetting = colorEffects.indexOf(mCameraParams
 					.getColorEffect());
-			builder.setTitle(R.string.color_effects_dialog_title)
+			builder.setTitle(
+					getResources().getString(
+							R.string.color_effects_dialog_title))
 					.setSingleChoiceItems(array, indexOfActiveSetting,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -164,7 +173,8 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 			String[] array = modes.toArray(new String[modes.size()]);
 			int indexOfActiveSetting = modes.indexOf(mCameraParams
 					.getFocusMode());
-			builder.setTitle(R.string.focus_mode_dialog_title)
+			builder.setTitle(
+					getResources().getString(R.string.focus_mode_dialog_title))
 					.setSingleChoiceItems(array, indexOfActiveSetting,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -206,7 +216,8 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 				indexOfActiveSetting = 4;
 				break;
 			}
-			builder.setTitle(R.string.video_sizes_dialog_title)
+			builder.setTitle(
+					getResources().getString(R.string.video_sizes_dialog_title))
 					.setSingleChoiceItems(array, indexOfActiveSetting,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -244,7 +255,8 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			array = getResources().getStringArray(R.array.time_lapse_duration);
-			builder.setTitle(R.string.duration_dialog_title)
+			builder.setTitle(
+					getResources().getString(R.string.duration_dialog_title))
 					.setSingleChoiceItems(array, mSelectedDurationOption,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -295,36 +307,43 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			array = getResources().getStringArray(R.array.time_lapse_delay);
-			builder.setTitle(R.string.delay_dialog_title).setSingleChoiceItems(
-					array, mSelectedDelayOption,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							if (array.length > which) {
-								mSelectedDelayOption = which;
-								switch (which) {
-								case 0:
-									mLapseDelay = 0;
-									break;
-								case 1:
-									mLapseDelay = 15 * 60 * 1000; // 15 min
-									break;
-								case 2:
-									mLapseDelay = 30 * 60 * 1000; // 30 min
-									break;
-								case 3:
-									mLapseDelay = 1 * 60 * 60 * 1000; // 1 hour
-									break;
-								case 4:
-									mLapseDelay = 2 * 60 * 60 * 1000; // 2 hours
-									break;
-								case 5:
-									mLapseDelay = 3 * 60 * 60 * 1000; // 3 hours
-									break;
+			builder.setTitle(
+					getResources().getString(R.string.delay_dialog_title))
+					.setSingleChoiceItems(array, mSelectedDelayOption,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int which) {
+									if (array.length > which) {
+										mSelectedDelayOption = which;
+										switch (which) {
+										case 0:
+											mLapseDelay = 0;
+											break;
+										case 1:
+											mLapseDelay = 15 * 60 * 1000; // 15
+																			// min
+											break;
+										case 2:
+											mLapseDelay = 30 * 60 * 1000; // 30
+																			// min
+											break;
+										case 3:
+											mLapseDelay = 1 * 60 * 60 * 1000; // 1
+																				// hour
+											break;
+										case 4:
+											mLapseDelay = 2 * 60 * 60 * 1000; // 2
+																				// hours
+											break;
+										case 5:
+											mLapseDelay = 3 * 60 * 60 * 1000; // 3
+																				// hours
+											break;
+										}
+									}
+									dialog.dismiss();
 								}
-							}
-							dialog.dismiss();
-						}
-					});
+							});
 			return builder.create();
 		}
 	}
@@ -337,7 +356,8 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			array = getResources()
 					.getStringArray(R.array.time_lapse_frame_rate);
-			builder.setTitle(R.string.lapse_rate_dialog_title)
+			builder.setTitle(
+					getResources().getString(R.string.lapse_rate_dialog_title))
 					.setSingleChoiceItems(array, mSelectedFrameRate,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -384,7 +404,8 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 			for (; indexOfActiveSetting < array.length; indexOfActiveSetting++)
 				if (array[indexOfActiveSetting].equals(value))
 					break;
-			builder.setTitle(R.string.antibanding_dialog_title)
+			builder.setTitle(
+					getResources().getString(R.string.antibanding_dialog_title))
 					.setSingleChoiceItems(array, indexOfActiveSetting,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -425,7 +446,8 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 					.findViewById(R.id.tvCurrentExposure);
 			minExposureValue = (TextView) v.findViewById(R.id.tvMinExpValue);
 			maxExposureValue = (TextView) v.findViewById(R.id.tvMaxExpValue);
-			builder.setTitle(R.string.exposure_dialog_title);
+			builder.setTitle(getResources().getString(
+					R.string.exposure_dialog_title));
 
 			min = Double
 					.valueOf(mCameraParams.get("min-exposure-compensation"));
@@ -481,7 +503,9 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 					.toArray(new String[whiteBalanceMode.size()]);
 			int indexOfActiveSetting = whiteBalanceMode.indexOf(mCameraParams
 					.getWhiteBalance());
-			builder.setTitle(R.string.white_balance_dialog_title)
+			builder.setTitle(
+					getResources().getString(
+							R.string.white_balance_dialog_title))
 					.setSingleChoiceItems(array, indexOfActiveSetting,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -506,7 +530,8 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 			String[] array = flashModes.toArray(new String[flashModes.size()]);
 			int indexOfActiveSetting = flashModes.indexOf(mCameraParams
 					.getFlashMode());
-			builder.setTitle(R.string.focus_mode_dialog_title)
+			builder.setTitle(
+					getResources().getString(R.string.focus_mode_dialog_title))
 					.setSingleChoiceItems(array, indexOfActiveSetting,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -536,18 +561,20 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 			for (; indexOfActiveSetting < array.length; indexOfActiveSetting++)
 				if (array[indexOfActiveSetting].equals(value))
 					break;
-			builder.setTitle(R.string.iso_dialog_title).setSingleChoiceItems(
-					array, indexOfActiveSetting,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							if (array.length > which) {
-								mCameraParams.set("iso", array[which]);
-								CameraActivity.getCameraInstance()
-										.setParameters(mCameraParams);
-							}
-							dialog.dismiss();
-						}
-					});
+			builder.setTitle(
+					getResources().getString(R.string.iso_dialog_title))
+					.setSingleChoiceItems(array, indexOfActiveSetting,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int which) {
+									if (array.length > which) {
+										mCameraParams.set("iso", array[which]);
+										CameraActivity.getCameraInstance()
+												.setParameters(mCameraParams);
+									}
+									dialog.dismiss();
+								}
+							});
 			return builder.create();
 		}
 	}
@@ -585,22 +612,51 @@ public class OptionsFragment extends Fragment implements OnClickListener {
 			(new DelayDialog()).show(getChildFragmentManager(), getTag());
 			break;
 		case R.id.folderIV:
-			openGallery();
+			startScan();
 			break;
 		default:
 			break;
 		}
 	}
 
-	private void openGallery() {
-		Intent intent = new Intent();
-		intent.setAction(Intent.ACTION_VIEW);
+	private void startScan() {
+		if (conn != null) {
+			conn.disconnect();
+		}
 		String PATH = Environment.getExternalStorageDirectory().getPath()
-				+ File.separator + R.string.lapse_folder_name;
+				+ File.separator
+				+ getResources().getString(R.string.lapse_folder_name);
 		File dir = new File(PATH);
 		dir.mkdirs();
-		intent.setDataAndType(
-				Uri.parse(PATH), "video/*");
-		startActivity(intent);
+		String[] lapseVids = dir.list();
+		if (lapseVids.length > 0) {
+			SCAN_PATH = PATH + File.separator + lapseVids[lapseVids.length - 1];
+			conn = new MediaScannerConnection(this.getActivity()
+					.getApplicationContext(), this);
+			conn.connect();
+		} else {
+			Toast.makeText(getActivity(), "No videos", Toast.LENGTH_SHORT)
+					.show();
+		}
+	}
+
+	@Override
+	public void onMediaScannerConnected() {
+		conn.scanFile(SCAN_PATH, FILE_TYPE);
+	}
+
+	@Override
+	public void onScanCompleted(String path, Uri uri) {
+		try {
+			System.out.println("URI " + uri);
+			if (uri != null) {
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				intent.setData(uri);
+				startActivity(intent);
+			}
+		} finally {
+			conn.disconnect();
+			conn = null;
+		}
 	}
 }
