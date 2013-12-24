@@ -98,8 +98,11 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 
 	private void initInnerComponents() {
 		// init UI elements
+
 		mOptionsLayout = (LinearLayout) mOptionsHolder
 				.findViewById(R.id.options);
+		mFolderImageView = (ImageView) mOptionsLayout
+				.findViewById(R.id.lastVideoIV);
 		mFlashImageView = (ImageView) mOptionsLayout.findViewById(R.id.flashIV);
 		mVideoOptionsImageView = (ImageView) mOptionsLayout
 				.findViewById(R.id.videoSizeIV);
@@ -114,8 +117,7 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 		mDurationImageView = (ImageView) mOptionsLayout
 				.findViewById(R.id.durationIV);
 		mDelayImageView = (ImageView) mOptionsLayout.findViewById(R.id.delayIV);
-		mFolderImageView = (ImageView) mOptionsLayout
-				.findViewById(R.id.folderIV);
+		
 
 		mCameraParams = CameraActivity.getCameraInstance().getParameters();
 
@@ -531,7 +533,7 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 			int indexOfActiveSetting = flashModes.indexOf(mCameraParams
 					.getFlashMode());
 			builder.setTitle(
-					getResources().getString(R.string.focus_mode_dialog_title))
+					getResources().getString(R.string.flash_modes_dialog_title))
 					.setSingleChoiceItems(array, indexOfActiveSetting,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -611,7 +613,7 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 		case R.id.delayIV:
 			(new DelayDialog()).show(getChildFragmentManager(), getTag());
 			break;
-		case R.id.folderIV:
+		case R.id.lastVideoIV:
 			startScan();
 			break;
 		default:
