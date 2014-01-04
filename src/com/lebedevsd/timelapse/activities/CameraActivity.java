@@ -92,7 +92,7 @@ public class CameraActivity extends FragmentActivity implements
 			mCamera.lock();
 			isRecording = false;
 			mCaptureButton.setImageDrawable(getResources().getDrawable(
-					R.drawable.ic_color_effects));
+					R.drawable.ic_action));
 		} else
 			releaseMediaRecorder();
 		reliaseCamera();
@@ -206,7 +206,7 @@ public class CameraActivity extends FragmentActivity implements
 			mTimerManager.cancel();
 			isRecording = false;
 			mCaptureButton.setImageDrawable(getResources().getDrawable(
-					R.drawable.ic_color_effects));
+					R.drawable.ic_action));
 		}
 		ft.commit();
 	}
@@ -231,7 +231,7 @@ public class CameraActivity extends FragmentActivity implements
 				mTimerManager.initTimers();
 				isRecording = true;
 				mCaptureButton.setImageDrawable(getResources().getDrawable(
-						R.drawable.ic_flash));
+						R.drawable.ic_action_selected));
 			} else {
 				releaseMediaRecorder();
 			}
