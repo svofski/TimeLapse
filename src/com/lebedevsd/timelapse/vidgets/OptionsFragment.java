@@ -64,7 +64,7 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 			Bundle savedInstanceState) {
 		mOptionsHolder = (FrameLayout) inflater.inflate(
 				R.layout.options_layout, container, false);
-		mLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_1080P;
+		mLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_HIGH;
 		mLapseFrameRate = 20;
 		mSelectedFrameRate = 0;
 		mLapseDelay = 0;
@@ -202,16 +202,16 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 			array = getResources().getStringArray(R.array.time_lapse_quality);
 			int indexOfActiveSetting = 0;
 			switch (mLapseQuality) {
-			case CamcorderProfile.QUALITY_TIME_LAPSE_1080P:
+			case CamcorderProfile.QUALITY_TIME_LAPSE_HIGH:
 				indexOfActiveSetting = 0;
 				break;
-			case CamcorderProfile.QUALITY_TIME_LAPSE_720P:
+			case CamcorderProfile.QUALITY_TIME_LAPSE_1080P:
 				indexOfActiveSetting = 1;
 				break;
-			case CamcorderProfile.QUALITY_TIME_LAPSE_480P:
+			case CamcorderProfile.QUALITY_TIME_LAPSE_720P:
 				indexOfActiveSetting = 2;
 				break;
-			case CamcorderProfile.QUALITY_TIME_LAPSE_HIGH:
+			case CamcorderProfile.QUALITY_TIME_LAPSE_480P:
 				indexOfActiveSetting = 3;
 				break;
 			case CamcorderProfile.QUALITY_TIME_LAPSE_LOW:
@@ -224,26 +224,33 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int which) {
+									int tmpLapseQuality = 0;
 									if (array.length > which) {
 										switch (which) {
 										case 0:
-											mLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_1080P;
+											tmpLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_HIGH;
 											break;
 										case 1:
-											mLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_720P;
+											tmpLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_1080P;
 											break;
 										case 2:
-											mLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_480P;
+											tmpLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_720P;
 											break;
 										case 3:
-											mLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_HIGH;
+											tmpLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_480P;
 											break;
 										case 4:
-											mLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_LOW;
+											tmpLapseQuality = CamcorderProfile.QUALITY_TIME_LAPSE_LOW;
 											break;
 										}
 									}
-									dialog.dismiss();
+									if (CamcorderProfile.hasProfile(tmpLapseQuality)){
+										mLapseQuality = tmpLapseQuality;
+										dialog.dismiss();
+									} else {
+										Toast.makeText(getActivity(), "Such Quality is not supported on your device.", Toast.LENGTH_SHORT)
+										.show();
+									}
 								}
 							});
 			return builder.create();

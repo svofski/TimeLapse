@@ -216,7 +216,7 @@ public class CameraActivity extends FragmentActivity implements
 	    Uri contentUri = Uri.fromFile(f);
 	    mediaScanIntent.setData(contentUri);
 	    this.sendBroadcast(mediaScanIntent);
-	    AppRater.app_event(this.getApplicationContext());
+	    AppRater.app_event(this);
 	}
 	
 	@Override

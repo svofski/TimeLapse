@@ -12,10 +12,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class AppRater {
-	private final static String APP_TITLE = "YOUR-APP-NAME";
-	private final static String APP_PNAME = "YOUR-PACKAGE-NAME";
+	private final static String APP_TITLE = "TimeLapse";
+	private final static String APP_PNAME = "com.lebedevsd.timelapse";
 
-	private final static int EVENTS_UNTIL_PROMPT = 3;
+	private final static int EVENTS_UNTIL_PROMPT = 6;
 
 	public static void app_event(Context mContext) {
 		SharedPreferences prefs = mContext.getSharedPreferences("apprater", 0);

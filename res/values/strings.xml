@@ -18,10 +18,10 @@
     <string name="iso_dialog_title">ISO</string>
 
     <string-array name="time_lapse_quality">
+        <item>Highest quality</item>
         <item>1080P quality</item>
         <item>720P quality</item>
         <item>480P quality</item>
-        <item>Highest quality</item>
         <item>Lowest quality</item>
     </string-array>
     <string-array name="time_lapse_frame_rate">
