@@ -97,8 +97,9 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 	}
 
 	private void initInnerComponents() {
+		mCameraParams = CameraActivity.getCameraInstance().getParameters();
+		
 		// init UI elements
-
 		mOptionsLayout = (LinearLayout) mOptionsHolder
 				.findViewById(R.id.options);
 		mFolderImageView = (ImageView) mOptionsLayout
@@ -112,14 +113,15 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 				.findViewById(R.id.colorEffectsIV);
 		mFocusModeImageView = (ImageView) mOptionsLayout
 				.findViewById(R.id.focusModeIV);
+		String supportedIsoValues = mCameraParams.get("iso-values");
 		mISOImageView = (ImageView) mOptionsLayout.findViewById(R.id.isoIV);
+		if (supportedIsoValues == null){
+			mISOImageView.setVisibility(View.GONE);
+		}
 		mFPSImageView = (ImageView) mOptionsLayout.findViewById(R.id.fpsIV);
 		mDurationImageView = (ImageView) mOptionsLayout
 				.findViewById(R.id.durationIV);
 		mDelayImageView = (ImageView) mOptionsLayout.findViewById(R.id.delayIV);
-		
-
-		mCameraParams = CameraActivity.getCameraInstance().getParameters();
 
 		// set clickListener to UI elements
 		mFlashImageView.setOnClickListener(this);
