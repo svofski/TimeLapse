@@ -1,8 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">TimeLaps</string>
+    <string name="app_name">TimeLapse</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="lapse_folder_name">Movies/timeLapseVideos</string>
+    <string name="folder_button_title">Lapse folder</string>
+    <string name="color_effects_dialog_title">Color effects</string>
+    <string name="focus_mode_dialog_title">Focus mode</string>
+    <string name="video_sizes_dialog_title">Output video quality</string>
+    <string name="duration_dialog_title">Lapse duration</string>
+    <string name="delay_dialog_title">Delay before Lapse</string>
+    <string name="lapse_rate_dialog_title">FPS capture rate</string>
+    <string name="antibanding_dialog_title">Antibanding</string>
+    <string name="exposure_dialog_title">Exposure</string>
+    <string name="white_balance_dialog_title">White balance</string>
+    <string name="flash_modes_dialog_title">Flash mode</string>
+    <string name="iso_dialog_title">ISO</string>
+	<string name="donate_dialog_title">donate</string>
+    
+    
+    <string-array name="time_lapse_quality">
+        <item>Highest quality</item>
+        <item>1080P quality</item>
+        <item>720P quality</item>
+        <item>480P quality</item>
+        <item>Lowest quality</item>
+    </string-array>
+    <string-array name="time_lapse_frame_rate">
+        <item>20 frames per second</item>
+        <item>15 frames per second</item>
+        <item>10 frames per second</item>
+        <item>5 frames per second</item>
+        <item>1 frame per second</item>
+        <!-- <item>User settings</item> -->
+    </string-array>
+    <string-array name="time_lapse_duration">
+        <item>Stop by User</item>
+        <item>30 seconds</item>
+        <item>1 minute</item>
+        <item>5 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+    </string-array>
+    <string-array name="time_lapse_delay">
+        <item>No delay</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>2 hours</item>
+        <item>3 hours</item>
+    </string-array>
 
 </resources>
