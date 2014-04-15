@@ -17,6 +17,7 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,11 +28,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class CameraActivity extends FragmentActivity implements
 		RecordingInterface {
 
 	private static final String TAG = "CameraActivity";
+
+	public static final int START_RECORDING = 0xff;
+	public static final int STOP_RECORDING = 0xff + 1;
+	public static final int PROGRESS_RECORDING = 0xff + 2;
 
 	private CameraPreview mCameraPreview;
 	private static Camera mCamera;
@@ -41,6 +47,8 @@ public class CameraActivity extends FragmentActivity implements
 	private boolean isRecording = false;
 	private Fragment mOptionsFragment;
 	private TimerManager mTimerManager;
+	private TextView mCurrentTimer;
+	private Handler mActionHandler;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +58,18 @@ public class CameraActivity extends FragmentActivity implements
 		}
 		setContentView(R.layout.activity_camera_view);
 
-		mTimerManager = new TimerManager(this);
+		mActionHandler = new Handler() {
+			public void handleMessage(android.os.Message msg) {
+				if (msg.what == START_RECORDING)
+					startRecording();
+				else if (msg.what == STOP_RECORDING)
+					stopRecording();
+				else if (msg.what == PROGRESS_RECORDING)
+					setRecordingProgress((String)msg.obj);
+			};
+		};
+
+		mTimerManager = new TimerManager(mActionHandler);
 
 		// Create our Preview view and set it as the content of our activity.
 		mCameraPreview = new CameraPreview(getApplicationContext());
@@ -58,16 +77,23 @@ public class CameraActivity extends FragmentActivity implements
 		mPreviewLayout.addView(mCameraPreview);
 		mCameraPreview.setKeepScreenOn(true);
 
+		mCurrentTimer = (TextView) findViewById(R.id.tvCurrentTimer);
+
 		// Create and add optionsFragment
 		mOptionsFragment = new OptionsFragment();
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		ft.add(R.id.optionsPlaseholder, mOptionsFragment).commitAllowingStateLoss();
+		ft.add(R.id.optionsPlaseholder, mOptionsFragment)
+				.commitAllowingStateLoss();
 
 		mCaptureButton = (ImageView) findViewById(R.id.startMotionIV);
 		mCaptureButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				changeRecorderState();
+				if (!isRecording) {
+					mTimerManager.initTimers();
+				} else {
+					stopRecording();
+				}
 			}
 		});
 	}
@@ -92,14 +118,7 @@ public class CameraActivity extends FragmentActivity implements
 	@Override
 	protected void onResume() {
 		super.onResume();
-	}
-
-	private void changeRecorderState() {
-		if (isRecording) {
-			stopRecording();
-		} else {
-			startRecording();
-		}
+		mCurrentTimer.setVisibility(View.GONE);
 	}
 
 	private boolean prepareVideoRecorder() {
@@ -123,10 +142,11 @@ public class CameraActivity extends FragmentActivity implements
 
 		// Step 4: Set output file
 		String filePath = Environment.getExternalStorageDirectory().getPath()
-				+ File.separator + getResources().getString(R.string.lapse_folder_name);
-		String fileName = "TimeLapse" + (new SimpleDateFormat("yyyyMMdd_HHmmss",
-				Locale.getDefault())).format(new Date())
-				+ ".mp4";
+				+ File.separator
+				+ getResources().getString(R.string.lapse_folder_name);
+		String fileName = "TimeLapse"
+				+ (new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()))
+						.format(new Date()) + ".mp4";
 		File timeLapsDirectory = new File(filePath + File.separator);
 		timeLapsDirectory.mkdirs();
 		galleryAddVideo(timeLapsDirectory);
@@ -134,7 +154,7 @@ public class CameraActivity extends FragmentActivity implements
 
 		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
 		// Step 5: Set the preview output
-		mRecorder.setPreviewDisplay(mCameraPreview.getHolder().getSurface());
+		//mRecorder.setPreviewDisplay(mCameraPreview.getHolder().getSurface());
 
 		// Step 6: Prepare configured MediaRecorder
 		try {
@@ -184,6 +204,7 @@ public class CameraActivity extends FragmentActivity implements
 	public void stopRecording() {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		if (isRecording) {
+			mCurrentTimer.setVisibility(View.GONE);
 			// Enabling settings
 			ft.show(mOptionsFragment);
 			// Free recorder
@@ -201,13 +222,14 @@ public class CameraActivity extends FragmentActivity implements
 	}
 
 	private void galleryAddVideo(File f) {
-	    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-	    Uri contentUri = Uri.fromFile(f);
-	    mediaScanIntent.setData(contentUri);
-	    this.sendBroadcast(mediaScanIntent);
-	    AppRater.app_event(this);
+		Intent mediaScanIntent = new Intent(
+				Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+		Uri contentUri = Uri.fromFile(f);
+		mediaScanIntent.setData(contentUri);
+		this.sendBroadcast(mediaScanIntent);
+		AppRater.app_event(this);
 	}
-	
+
 	@Override
 	public void startRecording() {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -221,6 +243,7 @@ public class CameraActivity extends FragmentActivity implements
 				isRecording = true;
 				mCaptureButton.setImageDrawable(getResources().getDrawable(
 						R.drawable.ic_action_selected));
+				mCurrentTimer.setVisibility(View.VISIBLE);
 			} else {
 				releaseMediaRecorder();
 			}
@@ -228,4 +251,7 @@ public class CameraActivity extends FragmentActivity implements
 		ft.commitAllowingStateLoss();
 	}
 
+	public void setRecordingProgress(String progress) {
+		mCurrentTimer.setText(progress);
+	}
 }

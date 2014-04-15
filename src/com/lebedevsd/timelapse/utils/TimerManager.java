@@ -2,8 +2,14 @@ package com.lebedevsd.timelapse.utils;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
-import com.lebedevsd.timelapse.activities.RecordingInterface;
+import android.os.Handler;
+import android.os.Message;
+import static com.lebedevsd.timelapse.activities.CameraActivity.PROGRESS_RECORDING;
+import static com.lebedevsd.timelapse.activities.CameraActivity.START_RECORDING;
+import static com.lebedevsd.timelapse.activities.CameraActivity.STOP_RECORDING;
+
 import com.lebedevsd.timelapse.vidgets.OptionsFragment;
 
 public class TimerManager {
@@ -12,49 +18,88 @@ public class TimerManager {
 	private int mDuration;
 	private TimerTask mDelayTask;
 	private TimerTask mDurationTask;
-	private RecordingInterface mRecorderController;
-	
-	public TimerManager(RecordingInterface recorderController){
+	private TimerTask mCounterTask;
+	private int count = 0;
+	private Handler mActivityHandler;
+
+	public TimerManager(Handler activityHandler) {
 		mTimer = new Timer();
-		mRecorderController = recorderController;
+		mActivityHandler = activityHandler;
 		mDelay = 0;
 		mDuration = 0;
 	}
-	
-	public void initTimers(){
+
+	public void initTimers() {
+		count = 0;
 		mDelay = OptionsFragment.getLapseDelay();
 		mDuration = OptionsFragment.getLapseDuration();
-		if (mDelay != 0)
-			mTimer.schedule(new DelayTask(), mDelay);
+		mCounterTask = new CounterTask();
+		mTimer.schedule(mCounterTask, 0, 1000L);
+		mDelayTask = new DelayTask();
+		mTimer.schedule(mDelayTask, mDelay);
 		if (mDuration != 0)
-			mTimer.schedule(new DurationTask(), mDelay + mDuration);
+		{
+			mDurationTask = new DurationTask();
+			mTimer.schedule(mDurationTask, mDelay + mDuration);
+		}
 	}
-		
-	public void cancel(){
-		if (mDelayTask != null){
+
+	public void cancel() {
+		if (mDelayTask != null) {
 			mDelayTask.cancel();
 			mDelayTask = null;
 		}
-		if (mDurationTask != null){
+		if (mDurationTask != null) {
 			mDurationTask.cancel();
 			mDurationTask = null;
-		}	
+		}
+		if (mCounterTask != null) {
+			mCounterTask.cancel();
+			mCounterTask = null;
+		}
 	}
-	
-	private class DelayTask extends TimerTask{
+
+	private class DelayTask extends TimerTask {
 
 		@Override
 		public void run() {
-			mRecorderController.startRecording();
+			mActivityHandler.sendEmptyMessage(START_RECORDING);
 		}
 	}
-	
-	private class DurationTask extends TimerTask{
+
+	private class DurationTask extends TimerTask {
 
 		@Override
 		public void run() {
-			mRecorderController.stopRecording();
+			mActivityHandler.sendEmptyMessage(STOP_RECORDING);
 		}
 	}
-	
+
+	private class CounterTask extends TimerTask {
+
+		@Override
+		public void run() {
+			count++;
+			Message msg = new Message();
+			msg.what = PROGRESS_RECORDING;
+			if (count * 1000 < mDelay) {
+				int time = mDelay - count * 1000;
+				int seconds = time / 1000;
+				int mins = time / 60000;
+				msg.obj = ("Time before recording:" + String.format(
+						"%d:%d",
+						mins,seconds));
+				mActivityHandler.sendMessage(msg);
+			} else {
+				int time = count * 1000 - mDelay;
+				int seconds = time / 1000;
+				int mins = time / 60000;
+				msg.obj = ("Recording:" + String.format(
+						"%d:%d",
+						mins,seconds));
+				mActivityHandler.sendMessage(msg);
+			}
+		}
+	}
+
 }

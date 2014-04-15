@@ -10,28 +10,40 @@
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true" />
-	
+
     <FrameLayout
         android:id="@+id/optionsPlaseholder"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true">
-        </FrameLayout>
-    
+        android:layout_centerVertical="true" >
+    </FrameLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20px" >
+
+        <TextView
+            android:id="@+id/tvCurrentTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Time: " />
+    </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true" >
-        
+
         <ImageView
             android:id="@+id/startMotionIV"
-            android:src="@drawable/ic_action"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            />
+            android:src="@drawable/ic_action" />
     </RelativeLayout>
 
 </RelativeLayout>
