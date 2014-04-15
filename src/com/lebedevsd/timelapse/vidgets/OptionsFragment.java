@@ -51,6 +51,7 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 	private ImageView mDurationImageView;
 	private ImageView mDelayImageView;
 	private ImageView mFolderImageView;
+	private ImageView mDonateImageView;
 	private static int mLapseQuality;
 	private static float mLapseFrameRate;
 	private static int mSelectedFrameRate;
@@ -122,7 +123,8 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 		mDurationImageView = (ImageView) mOptionsLayout
 				.findViewById(R.id.durationIV);
 		mDelayImageView = (ImageView) mOptionsLayout.findViewById(R.id.delayIV);
-
+		mDonateImageView = (ImageView) mOptionsLayout.findViewById(R.id.donateIV);
+		
 		// set clickListener to UI elements
 		mFlashImageView.setOnClickListener(this);
 		mVideoOptionsImageView.setOnClickListener(this);
@@ -134,6 +136,7 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 		mDurationImageView.setOnClickListener(this);
 		mDelayImageView.setOnClickListener(this);
 		mFolderImageView.setOnClickListener(this);
+		mDonateImageView.setOnClickListener(this);
 	}
 
 	public static class ColorEffectsDialog extends DialogFragment {
@@ -624,6 +627,10 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 			break;
 		case R.id.lastVideoIV:
 			startScan();
+			break;
+		case R.id.donateIV:
+			super.startActivity(new Intent(Intent.ACTION_VIEW, Uri
+					.parse("market://details?id=com.lebedevsd.timelapse.donate")));
 			break;
 		default:
 			break;

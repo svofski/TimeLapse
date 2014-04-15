@@ -16,7 +16,9 @@
     <string name="white_balance_dialog_title">White balance</string>
     <string name="flash_modes_dialog_title">Flash mode</string>
     <string name="iso_dialog_title">ISO</string>
-
+	<string name="donate_dialog_title">donate</string>
+    
+    
     <string-array name="time_lapse_quality">
         <item>Highest quality</item>
         <item>1080P quality</item>

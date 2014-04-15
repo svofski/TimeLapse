@@ -61,7 +61,7 @@ public class CameraActivity extends FragmentActivity implements
 		// Create and add optionsFragment
 		mOptionsFragment = new OptionsFragment();
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		ft.add(R.id.optionsPlaseholder, mOptionsFragment).commit();
+		ft.add(R.id.optionsPlaseholder, mOptionsFragment).commitAllowingStateLoss();
 
 		mCaptureButton = (ImageView) findViewById(R.id.startMotionIV);
 		mCaptureButton.setOnClickListener(new View.OnClickListener() {
@@ -86,18 +86,7 @@ public class CameraActivity extends FragmentActivity implements
 	@Override
 	protected void onPause() {
 		super.onPause();
-		if (isRecording) {
-			mRecorder.stop();
-			releaseMediaRecorder();
-			mCamera.lock();
-			isRecording = false;
-			mCaptureButton.setImageDrawable(getResources().getDrawable(
-					R.drawable.ic_action));
-		} else
-			releaseMediaRecorder();
-		reliaseCamera();
-		mCamera = null;
-		mRecorder = null;
+		stopRecording();
 	}
 
 	@Override
@@ -145,7 +134,7 @@ public class CameraActivity extends FragmentActivity implements
 
 		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
 		// Step 5: Set the preview output
-		// mRecorder.setPreviewDisplay(mPreview.getHolder().getSurface());
+		mRecorder.setPreviewDisplay(mCameraPreview.getHolder().getSurface());
 
 		// Step 6: Prepare configured MediaRecorder
 		try {
@@ -208,7 +197,7 @@ public class CameraActivity extends FragmentActivity implements
 			mCaptureButton.setImageDrawable(getResources().getDrawable(
 					R.drawable.ic_action));
 		}
-		ft.commit();
+		ft.commitAllowingStateLoss();
 	}
 
 	private void galleryAddVideo(File f) {
@@ -236,7 +225,7 @@ public class CameraActivity extends FragmentActivity implements
 				releaseMediaRecorder();
 			}
 		}
-		ft.commit();
+		ft.commitAllowingStateLoss();
 	}
 
 }
