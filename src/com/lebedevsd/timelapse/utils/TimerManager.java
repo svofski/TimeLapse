@@ -59,7 +59,7 @@ public class TimerManager {
 		}
 	}
 
-	private class DelayTask extends TimerTask {
+	private class DelayTask extends TimerTask {//
 
 		@Override
 		public void run() {
