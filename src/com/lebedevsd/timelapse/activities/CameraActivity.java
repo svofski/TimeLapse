@@ -113,6 +113,7 @@ public class CameraActivity extends FragmentActivity implements
 	protected void onPause() {
 		super.onPause();
 		stopRecording();
+		reliaseCamera();
 	}
 
 	@Override
