@@ -9,6 +9,7 @@ import android.os.SystemClock;
 import static com.lebedevsd.timelapse.activities.CameraActivity.PROGRESS_RECORDING;
 import static com.lebedevsd.timelapse.activities.CameraActivity.START_RECORDING;
 import static com.lebedevsd.timelapse.activities.CameraActivity.STOP_RECORDING;
+import static com.lebedevsd.timelapse.activities.CameraActivity.PREPARE_FOR_RECORDING;
 
 import com.lebedevsd.timelapse.vidgets.OptionsFragment;
 
@@ -30,6 +31,7 @@ public class TimerManager {
 	}
 
 	public void initTimers() {
+		cancel();
 		startTime = SystemClock.uptimeMillis();
 		mDelay = OptionsFragment.getLapseDelay();
 		mDuration = OptionsFragment.getLapseDuration();
@@ -40,6 +42,11 @@ public class TimerManager {
 		if (mDuration != 0) {
 			mDurationTask = new DurationTask();
 			mTimer.schedule(mDurationTask, mDelay + mDuration);
+		}
+		if (mDelay != 0 && mActivityHandler != null){
+			Message msg = new Message();
+			msg.what = PREPARE_FOR_RECORDING;
+			mActivityHandler.sendMessage(msg);
 		}
 	}
 
@@ -82,6 +89,7 @@ public class TimerManager {
 			Message msg = new Message();
 			msg.what = PROGRESS_RECORDING;
 			if (time < mDelay) {
+				time = mDelay - time;
 				long seconds = (time / 1000) % 60;
 				long mins = time / 60000;
 				if (seconds < 10) {
@@ -94,6 +102,8 @@ public class TimerManager {
 
 				mActivityHandler.sendMessage(msg);
 			} else {
+				if (mDelay != 0)
+					time -= mDelay;
 				long seconds = (time / 1000) % 60;
 				long mins = time / 60000;
 				if (seconds < 10) {

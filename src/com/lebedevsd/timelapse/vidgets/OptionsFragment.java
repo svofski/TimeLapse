@@ -99,7 +99,7 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 
 	private void initInnerComponents() {
 		mCameraParams = CameraActivity.getCameraInstance().getParameters();
-
+		
 		// init UI elements
 		mOptionsLayout = (LinearLayout) mOptionsHolder
 				.findViewById(R.id.options);
@@ -116,16 +116,15 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 				.findViewById(R.id.focusModeIV);
 		String supportedIsoValues = mCameraParams.get("iso-values");
 		mISOImageView = (ImageView) mOptionsLayout.findViewById(R.id.isoIV);
-		if (supportedIsoValues == null) {
+		if (supportedIsoValues == null){
 			mISOImageView.setVisibility(View.GONE);
 		}
 		mFPSImageView = (ImageView) mOptionsLayout.findViewById(R.id.fpsIV);
 		mDurationImageView = (ImageView) mOptionsLayout
 				.findViewById(R.id.durationIV);
 		mDelayImageView = (ImageView) mOptionsLayout.findViewById(R.id.delayIV);
-		mDonateImageView = (ImageView) mOptionsLayout
-				.findViewById(R.id.donateIV);
-
+		mDonateImageView = (ImageView) mOptionsLayout.findViewById(R.id.donateIV);
+		
 		// set clickListener to UI elements
 		mFlashImageView.setOnClickListener(this);
 		mVideoOptionsImageView.setOnClickListener(this);
@@ -250,15 +249,12 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 											break;
 										}
 									}
-									if (CamcorderProfile
-											.hasProfile(tmpLapseQuality)) {
+									if (CamcorderProfile.hasProfile(tmpLapseQuality)){
 										mLapseQuality = tmpLapseQuality;
 										dialog.dismiss();
 									} else {
-										Toast.makeText(
-												getActivity(),
-												"Such Quality is not supported on your device.",
-												Toast.LENGTH_SHORT).show();
+										Toast.makeText(getActivity(), "Such Quality is not supported on your device.", Toast.LENGTH_SHORT)
+										.show();
 									}
 								}
 							});
@@ -338,8 +334,8 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 											mLapseDelay = 0;
 											break;
 										case 1:
-											mLapseDelay = 60 * 1000; // 15
-																		// min
+											mLapseDelay =  60 * 1000; // 15
+																			// min
 											break;
 										case 2:
 											mLapseDelay = 30 * 60 * 1000; // 30
@@ -633,9 +629,8 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 			startScan();
 			break;
 		case R.id.donateIV:
-			super.startActivity(new Intent(
-					Intent.ACTION_VIEW,
-					Uri.parse("market://details?id=com.lebedevsd.timelapse.donate")));
+			super.startActivity(new Intent(Intent.ACTION_VIEW, Uri
+					.parse("market://details?id=com.lebedevsd.timelapse.donate")));
 			break;
 		default:
 			break;

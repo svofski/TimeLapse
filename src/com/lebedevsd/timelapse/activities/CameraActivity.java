@@ -30,6 +30,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+enum State {
+	StateIdle, StatePrepared, StateRecording
+}
+
 public class CameraActivity extends FragmentActivity implements
 		RecordingInterface {
 
@@ -38,13 +42,14 @@ public class CameraActivity extends FragmentActivity implements
 	public static final int START_RECORDING = 0xff;
 	public static final int STOP_RECORDING = 0xff + 1;
 	public static final int PROGRESS_RECORDING = 0xff + 2;
+	public static final int PREPARE_FOR_RECORDING = 0xff + 3;
 
 	private CameraPreview mCameraPreview;
 	private static Camera mCamera;
 	private ImageView mCaptureButton;
 	private FrameLayout mPreviewLayout;
 	private MediaRecorder mRecorder;
-	private boolean isRecording = false;
+	private State mRecordingState;
 	private Fragment mOptionsFragment;
 	private TimerManager mTimerManager;
 	private TextView mCurrentTimer;
@@ -60,12 +65,22 @@ public class CameraActivity extends FragmentActivity implements
 
 		mActionHandler = new Handler() {
 			public void handleMessage(android.os.Message msg) {
-				if (msg.what == START_RECORDING)
+				switch (msg.what) {
+				case START_RECORDING:
 					startRecording();
-				else if (msg.what == STOP_RECORDING)
+					break;
+				case STOP_RECORDING:
 					stopRecording();
-				else if (msg.what == PROGRESS_RECORDING)
-					setRecordingProgress((String)msg.obj);
+					break;
+				case PROGRESS_RECORDING:
+					setRecordingProgress((String) msg.obj);
+					break;
+				case PREPARE_FOR_RECORDING:
+					prepareViewForRecording();
+					break;
+				default:
+					break;
+				}
 			};
 		};
 
@@ -89,7 +104,7 @@ public class CameraActivity extends FragmentActivity implements
 		mCaptureButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (!isRecording) {
+				if (mRecordingState == State.StateIdle) {
 					mTimerManager.initTimers();
 				} else {
 					stopRecording();
@@ -119,6 +134,7 @@ public class CameraActivity extends FragmentActivity implements
 	@Override
 	protected void onResume() {
 		super.onResume();
+		mRecordingState = State.StateIdle;
 		mCurrentTimer.setVisibility(View.GONE);
 	}
 
@@ -155,7 +171,7 @@ public class CameraActivity extends FragmentActivity implements
 
 		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
 		// Step 5: Set the preview output
-		//mRecorder.setPreviewDisplay(mCameraPreview.getHolder().getSurface());
+		// mRecorder.setPreviewDisplay(mCameraPreview.getHolder().getSurface());
 
 		// Step 6: Prepare configured MediaRecorder
 		try {
@@ -204,22 +220,21 @@ public class CameraActivity extends FragmentActivity implements
 	@Override
 	public void stopRecording() {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		if (isRecording) {
-			mCurrentTimer.setVisibility(View.GONE);
-			// Enabling settings
-			ft.show(mOptionsFragment);
+		ft.show(mOptionsFragment);
+		ft.commitAllowingStateLoss();
+		// Activity stuff
+		mTimerManager.cancel();
+		mCaptureButton.setImageDrawable(getResources().getDrawable(
+				R.drawable.ic_action));
+		mCurrentTimer.setVisibility(View.GONE);
+		if (mRecordingState == State.StateRecording) {
 			// Free recorder
 			mRecorder.stop();
 			releaseMediaRecorder();
 			// Camera stuff
 			mCamera.lock();
-			// Activity stuff
-			mTimerManager.cancel();
-			isRecording = false;
-			mCaptureButton.setImageDrawable(getResources().getDrawable(
-					R.drawable.ic_action));
 		}
-		ft.commitAllowingStateLoss();
+		mRecordingState = State.StateIdle;
 	}
 
 	private void galleryAddVideo(File f) {
@@ -234,14 +249,13 @@ public class CameraActivity extends FragmentActivity implements
 	@Override
 	public void startRecording() {
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		if (!isRecording) {
+		if (mRecordingState != State.StateRecording) {
 			// Disable options
 			ft.hide(mOptionsFragment);
 			if (prepareVideoRecorder()) {
 				mRecorder.start();
 				// Activity stuff
-				mTimerManager.initTimers();
-				isRecording = true;
+				mRecordingState = State.StateRecording;
 				mCaptureButton.setImageDrawable(getResources().getDrawable(
 						R.drawable.ic_action_selected));
 				mCurrentTimer.setVisibility(View.VISIBLE);
@@ -250,6 +264,19 @@ public class CameraActivity extends FragmentActivity implements
 			}
 		}
 		ft.commitAllowingStateLoss();
+	}
+
+	private void prepareViewForRecording() {
+		if (mRecordingState == State.StateIdle) {
+			FragmentTransaction ft = getSupportFragmentManager()
+					.beginTransaction();
+			ft.hide(mOptionsFragment);
+			mRecordingState = State.StatePrepared;
+			mCaptureButton.setImageDrawable(getResources().getDrawable(
+					R.drawable.ic_action_selected));
+			mCurrentTimer.setVisibility(View.VISIBLE);
+			ft.commitAllowingStateLoss();
+		}
 	}
 
 	public void setRecordingProgress(String progress) {
