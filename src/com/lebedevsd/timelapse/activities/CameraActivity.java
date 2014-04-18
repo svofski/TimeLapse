@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import com.android.vending.billing.IInAppBillingService;
 import com.lebedevsd.timelapse.R;
 import com.lebedevsd.timelapse.utils.TimerManager;
 import com.lebedevsd.timelapse.vidgets.CameraPreview;
@@ -18,8 +19,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -54,10 +58,28 @@ public class CameraActivity extends FragmentActivity implements
 	private TimerManager mTimerManager;
 	private TextView mCurrentTimer;
 	private Handler mActionHandler;
+	private IInAppBillingService mService;
+	private ServiceConnection mServiceConn = new ServiceConnection() {
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// TODO Auto-generated method stub
+			mService = IInAppBillingService.Stub.asInterface(service);
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// TODO Auto-generated method stub
+			mService = null;
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		bindService(new 
+		        Intent("com.android.vending.billing.InAppBillingService.BIND"),
+		                mServiceConn, Context.BIND_AUTO_CREATE);
 		if (!checkCameraHardware(getApplicationContext())) {
 			this.finish();
 		}
@@ -113,6 +135,14 @@ public class CameraActivity extends FragmentActivity implements
 		});
 	}
 
+	@Override
+	public void onDestroy() {
+	    super.onDestroy();
+	    if (mService != null) {
+	        unbindService(mServiceConn);
+	    }   
+	}
+	
 	private boolean checkCameraHardware(Context context) {
 		if (context.getPackageManager().hasSystemFeature(
 				PackageManager.FEATURE_CAMERA)) {
