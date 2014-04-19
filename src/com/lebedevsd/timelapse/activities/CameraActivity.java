@@ -3,8 +3,12 @@ package com.lebedevsd.timelapse.activities;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.android.vending.billing.IInAppBillingService;
 import com.lebedevsd.timelapse.R;
@@ -20,9 +24,12 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.RemoteException;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender.SendIntentException;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
@@ -39,7 +46,7 @@ enum State {
 }
 
 public class CameraActivity extends FragmentActivity implements
-		RecordingInterface {
+		RecordingInterface, BillingInterface {
 
 	private static final String TAG = "CameraActivity";
 
@@ -54,32 +61,29 @@ public class CameraActivity extends FragmentActivity implements
 	private FrameLayout mPreviewLayout;
 	private MediaRecorder mRecorder;
 	private State mRecordingState;
-	private Fragment mOptionsFragment;
+	private OptionsFragment mOptionsFragment;
 	private TimerManager mTimerManager;
 	private TextView mCurrentTimer;
 	private Handler mActionHandler;
 	private IInAppBillingService mService;
 	private ServiceConnection mServiceConn = new ServiceConnection() {
-
 		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			// TODO Auto-generated method stub
-			mService = IInAppBillingService.Stub.asInterface(service);
+		public void onServiceDisconnected(ComponentName name) {
+			mService = null;
 		}
 
 		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			// TODO Auto-generated method stub
-			mService = null;
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			mService = IInAppBillingService.Stub.asInterface(service);
 		}
 	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		bindService(new 
-		        Intent("com.android.vending.billing.InAppBillingService.BIND"),
-		                mServiceConn, Context.BIND_AUTO_CREATE);
+		bindService(new Intent(
+				"com.android.vending.billing.InAppBillingService.BIND"),
+				mServiceConn, Context.BIND_AUTO_CREATE);
 		if (!checkCameraHardware(getApplicationContext())) {
 			this.finish();
 		}
@@ -118,6 +122,7 @@ public class CameraActivity extends FragmentActivity implements
 
 		// Create and add optionsFragment
 		mOptionsFragment = new OptionsFragment();
+		mOptionsFragment.setBillindInterfaceDelegate(this);
 		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 		ft.add(R.id.optionsPlaseholder, mOptionsFragment)
 				.commitAllowingStateLoss();
@@ -136,13 +141,31 @@ public class CameraActivity extends FragmentActivity implements
 	}
 
 	@Override
-	public void onDestroy() {
-	    super.onDestroy();
-	    if (mService != null) {
-	        unbindService(mServiceConn);
-	    }   
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == 1001) {
+			int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
+			String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+			String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+
+			if (resultCode == RESULT_OK) {
+				try {
+					JSONObject jo = new JSONObject(purchaseData);
+					String sku = jo.getString("productId");
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
-	
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (mService != null) {
+			unbindService(mServiceConn);
+		}
+	}
+
 	private boolean checkCameraHardware(Context context) {
 		if (context.getPackageManager().hasSystemFeature(
 				PackageManager.FEATURE_CAMERA)) {
@@ -164,8 +187,10 @@ public class CameraActivity extends FragmentActivity implements
 	@Override
 	protected void onResume() {
 		super.onResume();
+		mOptionsFragment.setBillindInterfaceDelegate(this);
 		mRecordingState = State.StateIdle;
 		mCurrentTimer.setVisibility(View.GONE);
+		mCameraPreview.surfaceChanged(mCameraPreview.getHolder(), 0, 0, 0);
 	}
 
 	private boolean prepareVideoRecorder() {
@@ -265,6 +290,7 @@ public class CameraActivity extends FragmentActivity implements
 			mCamera.lock();
 		}
 		mRecordingState = State.StateIdle;
+
 	}
 
 	private void galleryAddVideo(File f) {
@@ -311,5 +337,57 @@ public class CameraActivity extends FragmentActivity implements
 
 	public void setRecordingProgress(String progress) {
 		mCurrentTimer.setText(progress);
+	}
+
+	@Override
+	public void donateButtonWasPressed() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+
+				ArrayList<String> skuList = new ArrayList<String>();
+				skuList.add("donation_for_timelapse_application");
+				Bundle querySkus = new Bundle();
+				querySkus.putStringArrayList("ITEM_ID_LIST", skuList);
+
+				try {
+					Bundle skuDetails = mService.getSkuDetails(3,
+							getPackageName(), "inapp", querySkus);
+					int response = skuDetails.getInt("RESPONSE_CODE");
+					if (response == 0) {
+						ArrayList<String> responseList = skuDetails
+								.getStringArrayList("DETAILS_LIST");
+
+						for (String thisResponse : responseList) {
+							try {
+								JSONObject object = new JSONObject(thisResponse);
+								Bundle buyIntentBundle = mService.getBuyIntent(
+										3, getPackageName(),
+										object.getString("productId"), "inapp",
+										null);
+								PendingIntent pendingIntent = buyIntentBundle
+										.getParcelable("BUY_INTENT");
+								try {
+									startIntentSenderForResult(
+											pendingIntent.getIntentSender(),
+											1001, new Intent(),
+											Integer.valueOf(0),
+											Integer.valueOf(0),
+											Integer.valueOf(0));
+								} catch (SendIntentException e) {
+									e.printStackTrace();
+								}
+							} catch (JSONException e) {
+								e.printStackTrace();
+							}
+						}
+
+					}
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
 	}
 }

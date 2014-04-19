@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import com.lebedevsd.timelapse.R;
+import com.lebedevsd.timelapse.activities.BillingInterface;
 import com.lebedevsd.timelapse.activities.CameraActivity;
 
 import android.app.AlertDialog;
@@ -34,6 +35,8 @@ import android.widget.Toast;
 public class OptionsFragment extends Fragment implements OnClickListener,
 		MediaScannerConnectionClient {
 
+	private BillingInterface mBillingInterfaceDelegate;
+	
 	private static Camera.Parameters mCameraParams;
 	private String SCAN_PATH;
 	private static final String FILE_TYPE = "video/*";
@@ -59,7 +62,11 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 	private static int mSelectedDurationOption;
 	private static int mLapseDelay;
 	private static int mSelectedDelayOption;
-
+	
+	public void setBillindInterfaceDelegate(BillingInterface newDelegate){
+		mBillingInterfaceDelegate = newDelegate;
+	}
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -629,8 +636,7 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 			startScan();
 			break;
 		case R.id.donateIV:
-			super.startActivity(new Intent(Intent.ACTION_VIEW, Uri
-					.parse("market://details?id=com.lebedevsd.timelapse.donate")));
+			mBillingInterfaceDelegate.donateButtonWasPressed();
 			break;
 		default:
 			break;
