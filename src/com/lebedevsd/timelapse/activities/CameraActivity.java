@@ -25,6 +25,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,9 +34,6 @@ import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -45,7 +44,7 @@ enum State {
 	StateIdle, StatePrepared, StateRecording
 }
 
-public class CameraActivity extends FragmentActivity implements
+public class CameraActivity extends Activity implements
 		RecordingInterface, BillingInterface {
 
 	private static final String TAG = "CameraActivity";
@@ -113,17 +112,17 @@ public class CameraActivity extends FragmentActivity implements
 		mTimerManager = new TimerManager(mActionHandler);
 
 		// Create our Preview view and set it as the content of our activity.
-		mCameraPreview = new CameraPreview(getApplicationContext());
-		mPreviewLayout = (FrameLayout) findViewById(R.id.cameraView);
-		mPreviewLayout.addView(mCameraPreview);
-		mCameraPreview.setKeepScreenOn(true);
+		mCameraPreview = new CameraPreview();
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
+		ft.add(R.id.cameraView, mCameraPreview)
+				.commitAllowingStateLoss();
 
 		mCurrentTimer = (TextView) findViewById(R.id.tvCurrentTimer);
 
 		// Create and add optionsFragment
 		mOptionsFragment = new OptionsFragment();
 		mOptionsFragment.setBillindInterfaceDelegate(this);
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		ft = getFragmentManager().beginTransaction();
 		ft.add(R.id.optionsPlaseholder, mOptionsFragment)
 				.commitAllowingStateLoss();
 
@@ -190,7 +189,6 @@ public class CameraActivity extends FragmentActivity implements
 		mOptionsFragment.setBillindInterfaceDelegate(this);
 		mRecordingState = State.StateIdle;
 		mCurrentTimer.setVisibility(View.GONE);
-		mCameraPreview.surfaceChanged(mCameraPreview.getHolder(), 0, 0, 0);
 	}
 
 	private boolean prepareVideoRecorder() {
@@ -274,7 +272,7 @@ public class CameraActivity extends FragmentActivity implements
 
 	@Override
 	public void stopRecording() {
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		ft.show(mOptionsFragment);
 		ft.commitAllowingStateLoss();
 		// Activity stuff
@@ -304,7 +302,7 @@ public class CameraActivity extends FragmentActivity implements
 
 	@Override
 	public void startRecording() {
-		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		if (mRecordingState != State.StateRecording) {
 			// Disable options
 			ft.hide(mOptionsFragment);
@@ -324,7 +322,7 @@ public class CameraActivity extends FragmentActivity implements
 
 	private void prepareViewForRecording() {
 		if (mRecordingState == State.StateIdle) {
-			FragmentTransaction ft = getSupportFragmentManager()
+			FragmentTransaction ft = getFragmentManager()
 					.beginTransaction();
 			ft.hide(mOptionsFragment);
 			mRecordingState = State.StatePrepared;
@@ -351,6 +349,7 @@ public class CameraActivity extends FragmentActivity implements
 				querySkus.putStringArrayList("ITEM_ID_LIST", skuList);
 
 				try {
+					Log.d("", getPackageName());
 					Bundle skuDetails = mService.getSkuDetails(3,
 							getPackageName(), "inapp", querySkus);
 					int response = skuDetails.getInt("RESPONSE_CODE");

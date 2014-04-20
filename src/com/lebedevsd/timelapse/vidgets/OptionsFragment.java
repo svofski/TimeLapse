@@ -9,6 +9,8 @@ import com.lebedevsd.timelapse.activities.CameraActivity;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Camera;
@@ -18,8 +20,6 @@ import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -604,33 +604,33 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.flashIV:
-			(new FlashModesDialog()).show(getChildFragmentManager(), getTag());
+			(new FlashModesDialog()).show(getFragmentManager(), getTag());
 			break;
 		case R.id.isoIV:
-			(new ISODialog()).show(getChildFragmentManager(), getTag());
+			(new ISODialog()).show(getFragmentManager(), getTag());
 			break;
 		case R.id.focusModeIV:
-			(new ExposureDialog()).show(getChildFragmentManager(), getTag());
+			(new ExposureDialog()).show(getFragmentManager(), getTag());
 			break;
 		case R.id.colorEffectsIV:
 			(new ColorEffectsDialog())
-					.show(getChildFragmentManager(), getTag());
+					.show(getFragmentManager(), getTag());
 			break;
 		case R.id.videoSizeIV:
-			(new VideoSizesDialog()).show(getChildFragmentManager(), getTag());
+			(new VideoSizesDialog()).show(getFragmentManager(), getTag());
 			break;
 		case R.id.whiteBalanceIV:
 			(new WhiteBalanceDialog())
-					.show(getChildFragmentManager(), getTag());
+					.show(getFragmentManager(), getTag());
 			break;
 		case R.id.fpsIV:
-			(new LapseRateDialog()).show(getChildFragmentManager(), getTag());
+			(new LapseRateDialog()).show(getFragmentManager(), getTag());
 			break;
 		case R.id.durationIV:
-			(new DurationDialog()).show(getChildFragmentManager(), getTag());
+			(new DurationDialog()).show(getFragmentManager(), getTag());
 			break;
 		case R.id.delayIV:
-			(new DelayDialog()).show(getChildFragmentManager(), getTag());
+			(new DelayDialog()).show(getFragmentManager(), getTag());
 			break;
 		case R.id.lastVideoIV:
 			startScan();
