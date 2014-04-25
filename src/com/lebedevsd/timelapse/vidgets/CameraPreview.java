@@ -32,6 +32,14 @@ public class CameraPreview extends Fragment{
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		
+	}
+	
+	@Override
+	public void onResume()
+	{
+		super.onResume();
+		mHolder = mSurfaceView.getHolder();
 		mSurfaceCallBack = new SurfaceHolder.Callback(){
 			public void surfaceCreated(SurfaceHolder holder) {
 				// The Surface has been created, now tell the camera where to draw the
@@ -71,20 +79,6 @@ public class CameraPreview extends Fragment{
 
 			}
 		};
-	}
-	
-	@Override
-	public void onPause()
-	{
-		super.onPause();
-		mCamera.stopPreview();
-	}
-	
-	@Override
-	public void onResume()
-	{
-		super.onResume();
-		mHolder = mSurfaceView.getHolder();
 		mHolder.addCallback(mSurfaceCallBack);
 		mCamera = CameraActivity.getCameraInstance();
 		try {

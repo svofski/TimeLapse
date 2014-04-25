@@ -114,7 +114,7 @@ public class CameraActivity extends Activity implements
 		// Create our Preview view and set it as the content of our activity.
 		mCameraPreview = new CameraPreview();
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		ft.add(R.id.cameraView, mCameraPreview)
+		ft.replace(R.id.cameraView, mCameraPreview)
 				.commitAllowingStateLoss();
 
 		mCurrentTimer = (TextView) findViewById(R.id.tvCurrentTimer);
@@ -123,7 +123,7 @@ public class CameraActivity extends Activity implements
 		mOptionsFragment = new OptionsFragment();
 		mOptionsFragment.setBillindInterfaceDelegate(this);
 		ft = getFragmentManager().beginTransaction();
-		ft.add(R.id.optionsPlaseholder, mOptionsFragment)
+		ft.replace(R.id.optionsPlaseholder, mOptionsFragment)
 				.commitAllowingStateLoss();
 
 		mCaptureButton = (ImageView) findViewById(R.id.startMotionIV);
@@ -272,9 +272,6 @@ public class CameraActivity extends Activity implements
 
 	@Override
 	public void stopRecording() {
-		FragmentTransaction ft = getFragmentManager().beginTransaction();
-		ft.show(mOptionsFragment);
-		ft.commitAllowingStateLoss();
 		// Activity stuff
 		mTimerManager.cancel();
 		mCaptureButton.setImageDrawable(getResources().getDrawable(
@@ -288,7 +285,9 @@ public class CameraActivity extends Activity implements
 			mCamera.lock();
 		}
 		mRecordingState = State.StateIdle;
-
+		FragmentTransaction ft = getFragmentManager().beginTransaction();
+		ft.show(mOptionsFragment);
+		ft.commitAllowingStateLoss();
 	}
 
 	private void galleryAddVideo(File f) {
