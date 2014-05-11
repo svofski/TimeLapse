@@ -653,13 +653,13 @@ public class OptionsFragment extends Fragment implements OnClickListener,
 		File dir = new File(PATH);
 		dir.mkdirs();
 		String[] lapseVids = dir.list();
-		if (lapseVids.length > 0) {
+		if (lapseVids != null && lapseVids.length > 0) {
 			SCAN_PATH = PATH + File.separator + lapseVids[lapseVids.length - 1];
 			conn = new MediaScannerConnection(this.getActivity()
 					.getApplicationContext(), this);
 			conn.connect();
 		} else {
-			Toast.makeText(getActivity(), "No videos", Toast.LENGTH_SHORT)
+			Toast.makeText(getActivity(), "SD card unavailable", Toast.LENGTH_LONG)
 					.show();
 		}
 	}
